@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (storedToken && storedUser) {
           try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000'}/api/tasks/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://todo-web-app-i8sh.onrender.com'}/api/tasks/`, {
               headers: {
                 'Authorization': `Bearer ${storedToken}`,
               },
