@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from typing import Optional
 import uuid
+from pydantic import BaseModel
 
 from ..models.user import User, UserCreate, UserRead
 from ..database.database import get_session
@@ -44,6 +45,11 @@ def authenticate_user(session: Session, email: str, password: str) -> Optional[U
         return None
 
     return user
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -103,10 +109,10 @@ def register_user(user_create: UserCreate, session: Session = Depends(get_sessio
 
 
 @router.post("/login")
-def login_user(user_data: dict, session: Session = Depends(get_session)):
+def login_user(login_request: LoginRequest, session: Session = Depends(get_session)):
     """Login a user and return user data with access token"""
-    email = user_data.get("email")
-    password = user_data.get("password")
+    email = login_request.email
+    password = login_request.password
 
     if not email or not password:
         raise HTTPException(

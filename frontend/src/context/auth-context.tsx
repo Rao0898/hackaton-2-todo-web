@@ -130,7 +130,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Set a cookie for the middleware to read
         document.cookie = `auth-token=${data.token}; path=/; SameSite=Lax`;
 
-        window.location.href = '/dashboard';
+        window.location.href = '/home';
         return true;
       } else {
         return false;
@@ -163,7 +163,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Set a cookie for the middleware to read
         document.cookie = `auth-token=${data.token}; path=/; SameSite=Lax`;
 
-        window.location.href = '/dashboard';
+        window.location.href = '/home';
         return true;
       } else {
         return false;
