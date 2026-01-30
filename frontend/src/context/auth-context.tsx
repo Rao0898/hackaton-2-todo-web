@@ -34,10 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check if user is authenticated on initial load
   useEffect(() => {
-    if (typeof window === 'undefined') {
-      setIsLoading(false);
-      return;
-    }
+    if (typeof window === 'undefined') return;
 
     const checkAuth = async () => {
       try {
@@ -46,7 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (storedToken && storedUser) {
           try {
-            // FIX 1: Localhost fallback removed, added Render URL
+            // FIX: Updated fallback URL to Render
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://todo-web-app-i8sh.onrender.com'}/api/tasks/`, {
               headers: {
                 'Authorization': `Bearer ${storedToken}`,
@@ -62,8 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 localStorage.removeItem('user');
               }
             } else if (response.status === 401) {
-              console.log('Token validation failed - clearing session');
-              logout(); // Use centralized logout
+              console.log('Token validation failed - calling logout');
+              logout(); // Only call logout if status is exactly 401
             }
           } catch (networkError) {
             console.error('Network error during token validation:', networkError);
@@ -84,7 +81,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const getToken = () => {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
     try {
       return localStorage.getItem('access_token');
     } catch (error) {
@@ -108,13 +108,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('access_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
 
-        // FIX 2: Increased expiry to 7 days instead of 15 mins
+        // FIX: Extended expiry to 7 days
         const expiry = new Date();
         expiry.setDate(expiry.getDate() + 7);
 
-        // FIX 3: SameSite=Lax and window.location.replace
+        // FIX: Cookie with proper attributes
         document.cookie = `auth-token=${data.token}; path=/; expires=${expiry.toUTCString()}; SameSite=Lax;`;
 
+        // FIX: Use replace to force middleware recognition
         window.location.replace('/home');
         return true;
       } else {
@@ -134,35 +135,53 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('Signup Response Data:', data);
 
       if (data.user) {
+        // FIX: Automatically log in the user after signup
         setIsAuthenticated(true);
         setUser(data.user);
 
         localStorage.setItem('access_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
 
-        // FIX 2 & 3: Match the 7-day Lax logic
+        // FIX: Extended expiry to 7 days
         const expiry = new Date();
         expiry.setDate(expiry.getDate() + 7);
+
+        // FIX: Cookie with proper attributes
         document.cookie = `auth-token=${data.token}; path=/; expires=${expiry.toUTCString()}; SameSite=Lax;`;
 
+        // FIX: Use replace to force middleware recognition
         window.location.replace('/home');
         return true;
       } else {
         return false;
       }
-    } catch (error) {
-      console.error('Signup error:', error);
+    } catch (error: any) {
+      // FIX: Specific error handling for email already exists
+      if (error.message && error.message.toLowerCase().includes('already exists')) {
+        alert('This email already exists');
+      } else {
+        console.error('Signup error:', error);
+      }
       return false;
     }
   };
 
   const logout = () => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      console.error('Logout can only be performed on the client side');
+      return;
+    }
 
     setIsAuthenticated(false);
     setUser(null);
+
+    // Clear all localStorage
     localStorage.clear();
+
+    // Remove auth-token cookie specifically
     document.cookie = `auth-token=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;`;
+
+    // Navigate to login page
     window.location.replace('/login');
   };
 
