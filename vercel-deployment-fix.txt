@@ -1,0 +1,2 @@
+Deployment fix: Updated Next.js to 15.1.6 and cleared lock files for fresh install
+Date: January 30, 2026
