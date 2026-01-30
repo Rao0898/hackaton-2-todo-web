@@ -39,20 +39,7 @@ app = FastAPI(
 # Add CORS middleware - Allow all methods from various origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:3001",
-        "http://127.0.0.1:3001",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000",
-        "http://localhost:8080",
-        "http://127.0.0.1:8080",
-        "http://localhost:5173",  # Vite default port
-        "http://127.0.0.1:5173",
-        "https://localhost:3000",
-        "https://127.0.0.1:3000"
-    ],  # Frontend origins
+    allow_origins=[*],  # Frontend origins
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, PATCH, OPTIONS, etc.)
     allow_headers=["*"],  # Allow all headers
