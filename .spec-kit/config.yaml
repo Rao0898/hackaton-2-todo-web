@@ -1,0 +1,21 @@
+version: "1.0"
+project_name: "Phase II: Full-Stack Advanced Todo App"
+paths:
+  specs: "specs/"
+  frontend: "frontend/"
+  backend: "backend/"
+  feature_root: "specs/{feature_number}-{feature_name}"
+phases:
+  - "spec"
+  - "plan"
+  - "tasks"
+  - "implement"
+features:
+  - path: "specs/features"
+    description: "Feature specifications"
+  - path: "specs/api"
+    description: "API definitions"
+  - path: "specs/database"
+    description: "Database schemas"
+  - path: "specs/ui"
+    description: "UI designs"

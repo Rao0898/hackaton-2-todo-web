@@ -1,0 +1,80 @@
+{{- if .Values.database.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.database.name }}
+  labels:
+    app: {{ .Values.database.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.database.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.database.name }}
+    spec:
+      containers:
+      - name: postgres
+        image: "{{ .Values.database.image.repository }}:{{ .Values.database.image.tag }}"
+        imagePullPolicy: {{ .Values.database.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.database.service.port }}
+        env:
+        - name: POSTGRES_DB
+          value: {{ .Values.database.auth.database }}
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret
+              key: password
+        volumeMounts:
+        - mountPath: /var/lib/postgresql/data
+          name: postgres-storage
+        resources:
+{{ toYaml .Values.database.resources | indent 10 }}
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.database.name }}
+  labels:
+    app: {{ .Values.database.name }}
+spec:
+  type: {{ .Values.database.service.type | default "ClusterIP" }}
+  ports:
+  - port: {{ .Values.database.service.port }}
+    targetPort: {{ .Values.database.service.port }}
+    protocol: TCP
+    name: postgres
+  selector:
+    app: {{ .Values.database.name }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.database.persistence.size }}
+{{- if .Values.database.persistence.storageClass }}
+{{- if (eq "-" .Values.database.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.database.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+{{- end }}
