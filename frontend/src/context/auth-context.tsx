@@ -46,6 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (storedToken && storedUser) {
           try {
+            // FIX 1: Localhost fallback removed, added Render URL
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://todo-web-app-i8sh.onrender.com'}/api/tasks/`, {
               headers: {
                 'Authorization': `Bearer ${storedToken}`,
@@ -62,19 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               }
             } else if (response.status === 401) {
               console.log('Token validation failed - clearing session');
-              localStorage.clear();
-              document.cookie = "auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-              setIsAuthenticated(false);
-              setUser(null);
-              window.location.href = '/login';
+              logout(); // Use centralized logout
             }
           } catch (networkError) {
             console.error('Network error during token validation:', networkError);
-            localStorage.clear();
-            document.cookie = "auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            setIsAuthenticated(false);
-            setUser(null);
-            window.location.href = '/login';
+            // Don't clear storage on network error, just stop loading
           }
         } else {
           setIsAuthenticated(false);
@@ -82,10 +75,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error('Error initializing auth:', error);
-        localStorage.clear();
-        document.cookie = "auth-token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        setIsAuthenticated(false);
-        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -95,10 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const getToken = () => {
-    if (typeof window === 'undefined') {
-      return null;
-    }
-
+    if (typeof window === 'undefined') return null;
     try {
       return localStorage.getItem('access_token');
     } catch (error) {
@@ -108,29 +94,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    if (typeof window === 'undefined') {
-      console.error('Login can only be performed on the client side');
-      return false;
-    }
+    if (typeof window === 'undefined') return false;
 
     try {
       console.log('Attempting login with email:', email);
       const data = await authAPI.login(email, password);
       console.log('Login Response Data:', data);
 
-      // Extract user object from response and set authentication state
       if (data.user) {
         setIsAuthenticated(true);
         setUser(data.user);
 
-        // Store authentication state
         localStorage.setItem('access_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
 
-        // Set a cookie for the middleware to read
-        document.cookie = `auth-token=${data.token}; path=/; SameSite=Lax`;
+        // FIX 2: Increased expiry to 7 days instead of 15 mins
+        const expiry = new Date();
+        expiry.setDate(expiry.getDate() + 7);
 
-        window.location.href = '/home';
+        // FIX 3: SameSite=Lax and window.location.replace
+        document.cookie = `auth-token=${data.token}; path=/; expires=${expiry.toUTCString()}; SameSite=Lax;`;
+
+        window.location.replace('/home');
         return true;
       } else {
         return false;
@@ -142,28 +127,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signup = async (email: string, password: string, name: string): Promise<boolean> => {
-    if (typeof window === 'undefined') {
-      console.error('Signup can only be performed on the client side');
-      return false;
-    }
+    if (typeof window === 'undefined') return false;
 
     try {
       const data = await authAPI.signup(email, password, name);
       console.log('Signup Response Data:', data);
 
-      // Extract user object from response and set authentication state
       if (data.user) {
         setIsAuthenticated(true);
         setUser(data.user);
 
-        // Store authentication state
         localStorage.setItem('access_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
 
-        // Set a cookie for the middleware to read
-        document.cookie = `auth-token=${data.token}; path=/; SameSite=Lax`;
+        // FIX 2 & 3: Match the 7-day Lax logic
+        const expiry = new Date();
+        expiry.setDate(expiry.getDate() + 7);
+        document.cookie = `auth-token=${data.token}; path=/; expires=${expiry.toUTCString()}; SameSite=Lax;`;
 
-        window.location.href = '/home';
+        window.location.replace('/home');
         return true;
       } else {
         return false;
@@ -175,27 +157,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    if (typeof window === 'undefined') {
-      console.error('Logout can only be performed on the client side');
-      return;
-    }
+    if (typeof window === 'undefined') return;
 
     setIsAuthenticated(false);
     setUser(null);
-
-    // Clear all localStorage
     localStorage.clear();
-
-    // Remove all auth-related cookies
-    const cookies = document.cookie.split(";");
-    for (let cookie of cookies) {
-      const eqPos = cookie.indexOf("=");
-      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;`;
-    }
-
-    // Navigate to login page
-    window.location.href = '/login';
+    document.cookie = `auth-token=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;`;
+    window.location.replace('/login');
   };
 
   return (
