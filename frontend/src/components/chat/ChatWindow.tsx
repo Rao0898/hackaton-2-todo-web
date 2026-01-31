@@ -38,7 +38,7 @@ const ChatWindow = ({ onClose, onTaskAdded }: { onClose: () => void, onTaskAdded
         return;
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://todo-web-app-i8sh.onrender.com';
       const response = await fetch(`${baseUrl}/api/chat/conversations`, {
         method: 'GET',
         headers: {
@@ -86,7 +86,7 @@ const ChatWindow = ({ onClose, onTaskAdded }: { onClose: () => void, onTaskAdded
         return;
       }
 
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://todo-web-app-i8sh.onrender.com';
       const response = await fetch(`${baseUrl}/api/chat/conversations/${convId}/messages`, {
         method: 'GET',
         headers: {
@@ -157,7 +157,7 @@ const ChatWindow = ({ onClose, onTaskAdded }: { onClose: () => void, onTaskAdded
               // Load the conversation messages
               const token = getToken();
               if (token) {
-                const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
+                const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://todo-web-app-i8sh.onrender.com';
                 const response = await fetch(`${baseUrl}/api/chat/conversations/${savedConvId}/messages`, {
                   method: 'GET',
                   headers: {
@@ -205,7 +205,7 @@ const ChatWindow = ({ onClose, onTaskAdded }: { onClose: () => void, onTaskAdded
           }
 
           // Try to create a new conversation
-          const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
+          const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://todo-web-app-i8sh.onrender.com';
           const response = await fetch(`${baseUrl}/api/conversations`, {
             method: 'POST',
             headers: {
@@ -293,7 +293,7 @@ const ChatWindow = ({ onClose, onTaskAdded }: { onClose: () => void, onTaskAdded
       }
 
       // Delete the conversation
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://todo-web-app-i8sh.onrender.com';
       const response = await fetch(`${baseUrl}/api/chat/conversations/${convId}`, {
         method: 'DELETE',
         headers: {
@@ -390,7 +390,7 @@ const ChatWindow = ({ onClose, onTaskAdded }: { onClose: () => void, onTaskAdded
       }
 
       // Call the backend API to process the message
-      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://todo-web-app-i8sh.onrender.com';
       const response = await fetch(`${baseUrl}/api/chat/conversations/${conversationId}/messages`, {
         method: 'POST',
         headers: {
