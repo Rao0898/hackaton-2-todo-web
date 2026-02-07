@@ -1,6 +1,9 @@
 import { Task } from "@/types/task";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "https://todo-web-app-i8sh.onrender.com";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ||
+(typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? "http://localhost:8000"
+  : "https://todo-web-app-i8sh.onrender.com");
 
 // Helper function to get auth token from localStorage
 const getAuthToken = (): string | null => {
@@ -77,7 +80,7 @@ const apiRequest = async (
     console.error(`Fetch error for ${url}:`, error);
 
     // Provide more specific error messages
-   // Replace lines 83-85 with this:
+  
 if (error.name === 'TypeError' && error.message.includes('fetch')) {
   throw new Error(`Network error: Unable to connect to the server at ${API_BASE_URL}. Please check if the backend is live.`);
 }

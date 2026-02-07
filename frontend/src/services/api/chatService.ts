@@ -1,6 +1,9 @@
 import { Message } from '@/types/chat';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://127.0.0.1:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ||
+(typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? "http://localhost:8000"
+  : "https://todo-web-app-i8sh.onrender.com");
 
 // Ensure API_BASE_URL doesn't start with 'undefined' or is actually undefined
 const getValidApiBaseUrl = () => {
@@ -9,9 +12,11 @@ const getValidApiBaseUrl = () => {
     if (typeof window !== 'undefined') {
       // In development, typically backend runs on port 8000
       // In production, might be on the same host but different path
-      return 'http://127.0.0.1:8000'; // Default fallback
+      return (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? "http://localhost:8000" // Local fallback
+        : "https://todo-web-app-i8sh.onrender.com"; // Production default
     }
-    return 'http://127.0.0.1:8000';
+    return 'https://todo-web-app-i8sh.onrender.com'; // Production default
   }
   return process.env.NEXT_PUBLIC_API_BASE_URL;
 };

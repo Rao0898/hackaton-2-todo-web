@@ -44,7 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (storedToken && storedUser) {
           try {
             // FIX: Updated fallback URL to Render
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://todo-web-app-i8sh.onrender.com'}/api/tasks/`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL ||
+              (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+                ? "http://127.0.0.1:8000"
+                : "https://todo-web-app-i8sh.onrender.com")}/api/tasks/`, {
               headers: {
                 'Authorization': `Bearer ${storedToken}`,
               },

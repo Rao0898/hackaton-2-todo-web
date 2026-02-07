@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlmodel import Session
 from uuid import UUID
 from typing import Dict, Any, List
 import os
+import json
 
 from ..database.database import get_session
 from ..services.ai_conversation_service import AIConversationService
@@ -11,14 +12,24 @@ from ..services.auth_service import get_current_user_id
 router = APIRouter()
 
 @router.post("/")
-def create_conversation(
-    title: str = "New Conversation",
+async def create_conversation(
+    request: Request,
     current_user_id: str = Depends(get_current_user_id),
     session: Session = Depends(get_session)
 ) -> Dict[str, Any]:
     """
     Create a new conversation for the current user
     """
+    title = "New Conversation"
+
+    try:
+        body = await request.json()
+        if isinstance(body, dict) and "title" in body:
+            title = body.get("title", "New Conversation")
+    except Exception:
+        # If JSON parsing fails, use default title
+        pass
+
     ai_service = AIConversationService(session)
 
     result = ai_service.create_conversation(current_user_id, title)

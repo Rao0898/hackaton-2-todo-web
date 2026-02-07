@@ -1,152 +1,137 @@
-# Tasks: Todo AI Chatbot with MCP & Stateless Architecture
+# Tasks: Todo AI Chatbot with Event-Driven Architecture & Cloud Deployment
 
-**Feature**: Todo AI Chatbot with MCP & Stateless Architecture
-**Feature Branch**: `001-todo-ai-chatbot`
-**Generated**: 2026-01-22
+**Feature**: Todo AI Chatbot with Event-Driven Architecture & Cloud Deployment
+**Feature Branch**: `002-todo-ai-chatbot`
+**Generated**: 2026-02-01
 **Input**: spec.md, plan.md
 
 ## Dependencies
 
-**User Story Order**:
-1. US1 - Core Chat Functionality (P1 - Highest priority)
-2. US2 - Task Actions (P2 - Medium priority)
-3. US3 - AI Guardrails (P3 - Lower priority)
+**Technical Task Order**:
+1. Infrastructure Setup (Dapr, Kafka, Cloud)
+2. Backend Enhancement (Event-Driven Architecture)
+3. Frontend Enhancement (Advanced Features)
+4. Deployment & CI/CD Setup
 
 **Parallel Execution Opportunities**:
-- T003-T006 [P]: Database models can be developed in parallel
-- T007-T010 [P]: API endpoints can be developed in parallel after models
-- T011-T013 [P]: Frontend components can be developed in parallel
+- T005-T007 [P]: Dapr component configuration can be done in parallel
+- T008-T010 [P]: Kafka topics can be configured in parallel
+- T015-T020 [P]: Backend services can be enhanced in parallel after infrastructure
 
 ## Implementation Strategy
 
-**MVP Scope**: Complete US1 (Core Chat Functionality) with minimal viable features:
-- Conversation and Message models
-- Basic chat API endpoints
-- Floating chat UI component
-- Simple AI integration for add/list tasks
+**MVP Scope**: Complete infrastructure setup with Dapr and Kafka integration:
+- Dapr component YAMLs
+- Kafka topic configuration
+- Backend event publishing via Dapr HTTP API
+- Helm charts for cloud deployment
 
 **Incremental Delivery**:
-- MVP: US1 (Core functionality)
-- Release 2: US2 (Task actions)
-- Release 3: US3 (Guardrails and advanced features)
+- MVP: Infrastructure setup and event publishing
+- Release 2: Kafka consumers and notification services
+- Release 3: Frontend enhancements and cloud deployment
 
 ---
 
-## Phase 1: Setup & Environment
+## Phase 1: Infrastructure Setup
 
-- [ ] T001 Create backend project structure in `/backend/src/` with proper package init files
-- [ ] T002 Install required dependencies: FastAPI, SQLModel, Neon PostgreSQL drivers, OpenAI SDK, MCP SDK
-- [ ] T003 Configure database connection using existing Neon PostgreSQL configuration
-- [ ] T004 Set up frontend project structure in `/frontend/src/` for chat components
+**Goal**: Set up Dapr and Kafka infrastructure on cloud Kubernetes and prepare for event-driven architecture.
 
----
+### 1.1 Dapr Installation & Configuration
 
-## Phase 2: Foundational Components
+- [ ] T001 Install Dapr on Kubernetes cluster with proper configuration
+- [ ] T002 Write Dapr component YAMLs for PostgreSQL state store in `/backend/dapr/components/statestore.yaml`
+- [ ] T003 Write Dapr component YAMLs for Kafka pub/sub in `/backend/dapr/components/pubsub.yaml`
+- [ ] T004 Write Dapr component YAMLs for secrets management in `/backend/dapr/components/secrets.yaml`
+- [ ] T005 Configure Dapr global configuration in `/backend/dapr/config.yaml`
 
-- [ ] T005 Implement database configuration in `/backend/src/database/config.py` with Neon PostgreSQL settings
-- [ ] T006 Create database session management in `/backend/src/database/database.py`
-- [ ] T007 Set up authentication middleware to ensure user isolation for chat functionality
-- [ ] T008 Create base API router structure in `/backend/src/api/__init__.py`
+### 1.2 Kafka Setup with Strimzi
 
----
-
-## Phase 3: [US1] Core Chat Functionality
-
-**Goal**: Enable users to click a floating icon and chat in English, Urdu, or Roman Urdu to add and list their tasks.
-
-**Independent Test Criteria**: User can click the floating chat icon, start a conversation in any of the supported languages, and successfully add or list tasks through the AI assistant.
-
-### 3.1 Database Models
-
-- [ ] T009 [P] [US1] Create Conversation model in `/backend/src/models/conversation.py` with id, user_id, title, timestamps
-- [ ] T010 [P] [US1] Create Message model in `/backend/src/models/message.py` with id, conversation_id, role, content, timestamps
-- [ ] T011 [US1] Update User model in `/backend/src/models/user.py` to establish relationship with conversations
-- [ ] T012 [US1] Create database migration scripts for Conversation and Message tables
-
-### 3.2 Backend Services
-
-- [ ] T013 [P] [US1] Implement ConversationService in `/backend/src/services/conversation_service.py` for CRUD operations
-- [ ] T014 [P] [US1] Implement MessageService in `/backend/src/services/message_service.py` for message handling
-- [ ] T015 [US1] Create LanguageDetectionService in `/backend/src/services/language_detection_service.py` for multilingual support
-- [ ] T016 [US1] Implement AIConversationService in `/backend/src/services/ai_conversation_service.py` with OpenAI integration
-
-### 3.3 API Endpoints
-
-- [ ] T017 [P] [US1] Create conversation management endpoints in `/backend/src/api/conversation.py`
-- [ ] T018 [P] [US1] Create chat endpoints in `/backend/src/api/chat.py` for message exchange
-- [ ] T019 [US1] Implement stateless chat logic that fetches full conversation history from DB for each request
-- [ ] T020 [US1] Add authentication and user isolation to chat endpoints to ensure users can't access others' conversations
-
-### 3.4 Frontend Components
-
-- [ ] T021 [P] [US1] Create FloatingChatButton component in `/frontend/src/components/chat/FloatingChatButton.tsx`
-- [ ] T022 [P] [US1] Create ChatWindow component in `/frontend/src/components/chat/ChatWindow.tsx` with sidebar layout
-- [ ] T023 [P] [US1] Create MessageBubble component in `/frontend/src/components/chat/MessageBubble.tsx` for displaying messages
-- [ ] T024 [US1] Create ChatInput component in `/frontend/src/components/chat/ChatInput.tsx` with send functionality
-- [ ] T025 [US1] Implement chat API service functions in `/frontend/src/services/api/chatService.ts`
-
-### 3.5 Integration & Testing
-
-- [ ] T026 [US1] Connect frontend chat components to backend API endpoints
-- [ ] T027 [US1] Test basic conversation flow: create conversation, send messages, receive AI responses
-- [ ] T028 [US1] Verify multilingual support works for English, Urdu, and Roman Urdu
-- [ ] T029 [US1] Test user isolation to ensure one user cannot see another's conversations
+- [ ] T006 Deploy Strimzi Kafka operator to Kubernetes cluster
+- [ ] T007 Configure Kafka topics for reminders and recurring tasks in `/backend/kafka/topics/`
+- [ ] T008 Set up Kafka consumer groups for notification service
+- [ ] T009 Set up Kafka consumer groups for recurring task service
 
 ---
 
-## Phase 4: [US2] Task Actions
+## Phase 2: Backend Enhancement
 
-**Goal**: Enable users to have the AI mark tasks as complete or delete them using natural language commands.
+**Goal**: Refactor services to use Dapr sidecars and implement event-driven architecture for notifications and recurring tasks.
 
-**Independent Test Criteria**: User can successfully mark tasks as complete or delete tasks by issuing natural language commands to the AI assistant.
+### 2.1 Dapr Integration
 
-### 4.1 MCP Server Implementation
+- [ ] T010 Refactor existing services to use Dapr sidecars for state management
+- [ ] T011 Update Backend to publish events via Dapr HTTP API in `/backend/src/events/publisher.py`
+- [ ] T012 Implement Dapr state management for task persistence
+- [ ] T013 Configure Dapr secret management for API keys
 
-- [ ] T030 [P] [US2] Create MCP Server service in `/backend/src/services/mcp_server_service.py` with tool definitions
-- [ ] T031 [P] [US2] Implement add_task tool in MCP server with title, description, user_id parameters
-- [ ] T032 [P] [US2] Implement list_tasks tool in MCP server with status filtering (all, pending, completed)
-- [ ] T033 [US2] Implement complete_task tool in MCP server with task_id parameter
-- [ ] T034 [US2] Implement delete_task tool in MCP server with task_id parameter
-- [ ] T035 [US2] Implement update_task tool in MCP server for modifying title/description
+### 2.2 Advanced Feature Implementation
 
-### 4.2 Task Integration Service
-
-- [ ] T036 [US2] Create TaskIntegrationService in `/backend/src/services/task_integration_service.py` to connect AI to task operations
-- [ ] T037 [US2] Update AIConversationService to use MCP tools for task operations
-- [ ] T038 [US2] Test natural language processing for task commands (complete, delete, update)
-
-### 4.3 API & Frontend Updates
-
-- [ ] T039 [US2] Update chat endpoints to support task operation callbacks
-- [ ] T040 [US2] Enhance chat UI to display task operation confirmations and results
+- [ ] T014 Update Task model to include due dates, recurring schedules, and filters
+- [ ] T015 Implement recurring task service as Kafka consumer in `/backend/kafka/consumers/recurring-task-consumer.py`
+- [ ] T016 Implement notification service as Kafka consumer in `/backend/kafka/consumers/reminder-consumer.py`
+- [ ] T017 Add search functionality to task API endpoints in `/backend/src/api/tasks.py`
+- [ ] T018 Add filtering functionality to task API endpoints in `/backend/src/api/tasks.py`
+- [ ] T019 Implement due date processing in task services
+- [ ] T020 Implement recurring task scheduling logic
 
 ---
 
-## Phase 5: [US3] AI Guardrails
+## Phase 3: Frontend Enhancement
 
-**Goal**: Ensure the AI politely redirects off-topic questions back to task management functions.
+**Goal**: Add advanced features to the UI including search, filters, due dates, and recurring task configuration.
 
-**Independent Test Criteria**: When users ask off-topic questions, the AI assistant recognizes them and redirects the conversation back to task management.
+### 3.1 Advanced Feature UI
 
-### 5.1 AI Safety Implementation
+- [ ] T021 Add task search functionality to UI in `/frontend/src/components/task/TaskSearch.tsx`
+- [ ] T022 Implement task filtering controls in `/frontend/src/components/task/TaskFilter.tsx`
+- [ ] T023 Create recurring task configuration interface in `/frontend/src/components/task/RecurringTaskConfig.tsx`
+- [ ] T024 Add due date selection and display in task components
+- [ ] T025 Update task list component to support search and filters in `/frontend/src/components/task/TaskList.tsx`
 
-- [ ] T041 [US3] Enhance AIConversationService with guardrail logic to detect off-topic queries
-- [ ] T042 [US3] Implement persona management to maintain productivity-focused assistant behavior
-- [ ] T043 [US3] Add polite redirection responses for off-topic questions like 'How to cook biryani?'
+### 3.2 API Integration
 
-### 5.2 Testing & Refinement
-
-- [ ] T044 [US3] Test guardrail effectiveness with various off-topic queries
-- [ ] T045 [US3] Refine AI responses to maintain helpful, professional tone while redirecting to tasks
-- [ ] T046 [US3] Verify AI maintains context when returning to task-related queries
+- [ ] T026 Update frontend API services to support search and filtering in `/frontend/src/services/api/taskService.ts`
+- [ ] T027 Connect frontend to new task API endpoints with advanced features
 
 ---
 
-## Phase 6: Polish & Cross-Cutting Concerns
+## Phase 4: Deployment & CI/CD
 
-- [ ] T047 Implement conversation history cleanup for extremely long conversations to prevent database limits
-- [ ] T048 Add error handling for when AI service is temporarily unavailable
-- [ ] T049 Optimize response times for chat functionality to meet <500ms requirement
-- [ ] T050 Conduct end-to-end testing of all chatbot functionalities
-- [ ] T051 Update documentation for chatbot features and API endpoints
-- [ ] T052 Performance testing to ensure system meets measurable outcomes (95% NLP accuracy, 2s load time, etc.)
+**Goal**: Create deployment artifacts and setup CI/CD pipeline for cloud deployment.
+
+### 4.1 Deployment Artifacts
+
+- [ ] T028 Create Helm charts for cloud deployment in `/backend/helm/todo-app/`
+- [ ] T029 Configure Helm values for cloud-specific settings
+- [ ] T030 Create Kafka Helm chart using Strimzi in `/backend/helm/kafka/strimzi-kafka/`
+- [ ] T031 Add Dapr sidecar injection configurations to Helm charts
+
+### 4.2 CI/CD Pipeline
+
+- [ ] T032 Setup GitHub Actions for CI/CD in `/.infrastructure/github-actions/ci.yml`
+- [ ] T033 Create development deployment workflow in `/.infrastructure/github-actions/cd-dev.yml`
+- [ ] T034 Create production deployment workflow in `/.infrastructure/github-actions/cd-prod.yml`
+- [ ] T035 Configure cloud-specific Kubernetes manifests in `/.infrastructure/k8s-manifests/`
+
+---
+
+## Phase 5: Integration & Testing
+
+**Goal**: Test the complete event-driven architecture and validate cloud deployment.
+
+### 5.1 Event-Driven Testing
+
+- [ ] T036 Test Kafka pub/sub functionality with Dapr integration
+- [ ] T037 Validate notification service consumption of reminder events
+- [ ] T038 Test recurring task scheduling and execution
+- [ ] T039 Verify event-driven architecture performance under load
+
+### 5.2 Cloud Deployment Testing
+
+- [ ] T040 Deploy to cloud Kubernetes environment (AKS/GKE)
+- [ ] T041 Test scalability of event-driven architecture
+- [ ] T042 Validate Dapr state management and secret handling in cloud
+- [ ] T043 Conduct end-to-end testing of all enhanced functionalities
+- [ ] T044 Performance testing for distributed event processing
+- [ ] T045 Security testing for cloud deployment and Dapr integration

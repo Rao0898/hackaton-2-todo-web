@@ -25,7 +25,7 @@ class AIConversationService:
             # Configure with the API key
             genai.configure(api_key=gemini_api_key)
             # Initialize the model for Gemini 2.0 Flash
-            self.model = genai.GenerativeModel('gemini-2.0-flash')
+            self.model = genai.GenerativeModel('gemini-2.5-preview')
         else:
             raise ValueError("GEMINI_API_KEY environment variable is required")
 
@@ -292,7 +292,7 @@ class AIConversationService:
 
             # Create a new model instance with system instruction and tools
             model = genai.GenerativeModel(
-                model_name='gemini-2.0-flash',
+                model_name='gemini-2.5-preview',
                 system_instruction=system_instruction,
                 tools=tools
             )

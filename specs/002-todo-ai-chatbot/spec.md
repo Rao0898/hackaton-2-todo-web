@@ -1,11 +1,25 @@
-# Feature Specification: Todo AI Chatbot with MCP & Stateless Architecture
+# Feature Specification: Todo AI Chatbot with Event-Driven Architecture & Cloud Deployment
 
-**Feature Branch**: `001-todo-ai-chatbot`
-**Created**: 2026-01-22
+**Feature Branch**: `002-todo-ai-chatbot`
+**Created**: 2026-02-01
 **Status**: Draft
-**Input**: User description: "Phase III: Todo AI Chatbot with MCP & Stateless Architecture"
+**Input**: User description: "Phase V: Advanced Cloud Deployment with Event-Driven Architecture"
 
 Requirements to include in Spec:
+
+Event-Driven Architecture:
+
+Implement Event-Driven Architecture using Apache Kafka for reminders and recurring tasks.
+
+Use Dapr integration for Pub/Sub (Kafka), State Store (PostgreSQL), and Secrets management for API keys.
+
+Target Environment:
+
+Change target environment from Minikube to Cloud Kubernetes (AKS/GKE).
+
+Advanced Features:
+
+Include Advanced Features: Recurring tasks, Due dates, Search, and Filters.
 
 User Interface (Frontend):
 

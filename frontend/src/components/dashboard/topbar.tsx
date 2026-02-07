@@ -28,7 +28,10 @@ export default function Topbar() {
           return;
         }
 
-        const response = await fetch('http://localhost:8000/api/tasks/notifications/', {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL ||
+          (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? "http://127.0.0.1:8000"
+            : "https://todo-web-app-i8sh.onrender.com")}/api/tasks/notifications/`, {
           headers: {
             'Authorization': `Bearer ${token}`,
           },

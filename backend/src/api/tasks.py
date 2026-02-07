@@ -7,6 +7,7 @@ from ..models.task import Task, TaskCreate, TaskRead, TaskUpdate
 from ..models.user import User
 from ..database.database import get_session
 from ..services.auth_service import get_current_user_id
+from ..services.task_service_dapr import create_task as dapr_create_task, get_task_by_id as dapr_get_task_by_id, get_tasks as dapr_get_tasks, update_task as dapr_update_task, delete_task as dapr_delete_task, toggle_task_completion as dapr_toggle_task_completion
 
 
 router = APIRouter()
@@ -15,24 +16,18 @@ router = APIRouter()
 @router.post("/", response_model=TaskRead)
 def create_task(task_create: TaskCreate, current_user_id: str = Depends(get_current_user_id), session: Session = Depends(get_session)):
     """Create a new task for the current user"""
-    # Convert current_user_id to UUID
-    user_uuid = uuid.UUID(current_user_id)
+    # Use the Dapr-enhanced task service to create the task and publish event
+    from uuid import UUID
 
-    # Create task with current user's ID
-    db_task = Task(
-        title=task_create.title,
-        description=task_create.description,
-        priority=task_create.priority,
-        tags=task_create.tags,
-        due_date=task_create.due_date,
-        completed=task_create.completed,
-        completed_at=task_create.completed_at,
-        user_id=user_uuid
-    )
+    # Convert the current_user_id to UUID and create a TaskCreate object with the proper user_id
+    task_create_dict = task_create.dict()
+    task_create_dict['user_id'] = UUID(current_user_id)
 
-    session.add(db_task)
-    session.commit()
-    session.refresh(db_task)
+    # Create a TaskCreate object with the converted user_id
+    updated_task_create = TaskCreate(**task_create_dict)
+
+    # Use the Dapr-enhanced service
+    db_task = dapr_create_task(session=session, task_create=updated_task_create)
 
     return db_task
 
@@ -40,10 +35,12 @@ def create_task(task_create: TaskCreate, current_user_id: str = Depends(get_curr
 @router.get("/", response_model=List[TaskRead])
 def get_tasks(current_user_id: str = Depends(get_current_user_id), session: Session = Depends(get_session)):
     """Get all tasks for the current user"""
-    user_uuid = uuid.UUID(current_user_id)
+    from uuid import UUID
 
-    statement = select(Task).where(Task.user_id == user_uuid)
-    tasks = session.exec(statement).all()
+    user_uuid = UUID(current_user_id)
+
+    # Use the Dapr-enhanced task service
+    tasks = dapr_get_tasks(session=session, user_id=user_uuid)
 
     return tasks
 
@@ -51,10 +48,12 @@ def get_tasks(current_user_id: str = Depends(get_current_user_id), session: Sess
 @router.get("/{task_id}", response_model=TaskRead)
 def get_task(task_id: uuid.UUID, current_user_id: str = Depends(get_current_user_id), session: Session = Depends(get_session)):
     """Get a specific task by ID for the current user"""
-    user_uuid = uuid.UUID(current_user_id)
+    from uuid import UUID
 
-    statement = select(Task).where(Task.id == task_id, Task.user_id == user_uuid)
-    task = session.exec(statement).first()
+    user_uuid = UUID(current_user_id)
+
+    # Use the Dapr-enhanced task service
+    task = dapr_get_task_by_id(session=session, task_id=task_id, user_id=user_uuid)
 
     if not task:
         raise HTTPException(
@@ -68,24 +67,18 @@ def get_task(task_id: uuid.UUID, current_user_id: str = Depends(get_current_user
 @router.put("/{task_id}", response_model=TaskRead)
 def update_task(task_id: uuid.UUID, task_update: TaskUpdate, current_user_id: str = Depends(get_current_user_id), session: Session = Depends(get_session)):
     """Update a specific task by ID for the current user"""
-    user_uuid = uuid.UUID(current_user_id)
+    from uuid import UUID
 
-    statement = select(Task).where(Task.id == task_id, Task.user_id == user_uuid)
-    db_task = session.exec(statement).first()
+    user_uuid = UUID(current_user_id)
+
+    # Use the Dapr-enhanced task service
+    db_task = dapr_update_task(session=session, task_id=task_id, task_update=task_update, user_id=user_uuid)
 
     if not db_task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found"
         )
-
-    # Update task fields
-    for field, value in task_update.dict(exclude_unset=True).items():
-        setattr(db_task, field, value)
-
-    session.add(db_task)
-    session.commit()
-    session.refresh(db_task)
 
     return db_task
 
@@ -93,19 +86,18 @@ def update_task(task_id: uuid.UUID, task_update: TaskUpdate, current_user_id: st
 @router.delete("/{task_id}")
 def delete_task(task_id: uuid.UUID, current_user_id: str = Depends(get_current_user_id), session: Session = Depends(get_session)):
     """Delete a specific task by ID for the current user"""
-    user_uuid = uuid.UUID(current_user_id)
+    from uuid import UUID
 
-    statement = select(Task).where(Task.id == task_id, Task.user_id == user_uuid)
-    db_task = session.exec(statement).first()
+    user_uuid = UUID(current_user_id)
 
-    if not db_task:
+    # Use the Dapr-enhanced task service
+    success = dapr_delete_task(session=session, task_id=task_id, user_id=user_uuid)
+
+    if not success:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found"
         )
-
-    session.delete(db_task)
-    session.commit()
 
     return {"message": "Task deleted successfully"}
 
@@ -113,30 +105,18 @@ def delete_task(task_id: uuid.UUID, current_user_id: str = Depends(get_current_u
 @router.patch("/{task_id}/toggle-complete", response_model=TaskRead)
 def toggle_task_completion(task_id: uuid.UUID, current_user_id: str = Depends(get_current_user_id), session: Session = Depends(get_session)):
     """Toggle the completion status of a task for the current user"""
-    user_uuid = uuid.UUID(current_user_id)
+    from uuid import UUID
 
-    statement = select(Task).where(Task.id == task_id, Task.user_id == user_uuid)
-    db_task = session.exec(statement).first()
+    user_uuid = UUID(current_user_id)
+
+    # Use the Dapr-enhanced task service
+    db_task = dapr_toggle_task_completion(session=session, task_id=task_id, user_id=user_uuid)
 
     if not db_task:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found"
         )
-
-    # Toggle completion status
-    db_task.completed = not db_task.completed
-
-    # Set completed_at timestamp if task is completed
-    if db_task.completed:
-        from datetime import datetime
-        db_task.completed_at = datetime.utcnow()
-    else:
-        db_task.completed_at = None
-
-    session.add(db_task)
-    session.commit()
-    session.refresh(db_task)
 
     return db_task
 
